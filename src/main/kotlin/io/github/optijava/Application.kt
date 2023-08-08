@@ -20,5 +20,3 @@ fun Application.module() {
     logger.info("Configuring routes...")
     configureRouting()
 }
-
-

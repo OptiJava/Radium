@@ -1,8 +1,6 @@
 package io.github.optijava.routes
 
-import io.github.optijava.core.PublicUserFile
-import io.github.optijava.core.fileIndex
-import io.github.optijava.core.storagePath
+import io.github.optijava.core.*
 import io.github.optijava.logger
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -10,6 +8,8 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.util.*
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 fun Route.registerFilesRouting() {
     route("/files") {
@@ -20,13 +20,21 @@ fun Route.registerFilesRouting() {
             call.respondRedirect("/files/list", true)
         }
         get("/list") {
-            call.respondText("$fileIndex\n\nThis page has not been implemented yet.", ContentType.Text.Plain, status = HttpStatusCode.NotImplemented)
+            call.respondText(
+                "$fileIndex\n\nThis page has not been implemented yet.",
+                ContentType.Text.Plain,
+                status = HttpStatusCode.NotImplemented
+            )
         }
 
         //////////////////////////////
         //      file download       //
         //////////////////////////////
         get("/{id?}") {
+            if (call.parameters["id"] == null) {
+                call.respondText("404 Not Found.", status = HttpStatusCode.NotFound)
+                return@get
+            }
             call.respondRedirect("/files/${call.parameters["id"]}/info", permanent = true)
         }
         get("/{id?}/{filename?}") {
@@ -45,7 +53,7 @@ fun Route.registerFilesRouting() {
                 call.respondText("404 Not Found", status = HttpStatusCode.NotFound)
                 return@get
             }
-            call.respondText("This page has not been implemented yet.", status = HttpStatusCode.NotImplemented)
+            call.respondText("${Json.encodeToString(fileIndex[call.parameters["id"]!!]!!)} \n\nThis page has not been implemented yet.", status = HttpStatusCode.NotImplemented)
         }
     }
 
@@ -57,7 +65,9 @@ fun Route.registerFilesRouting() {
         put("/{filename?}") {
             logger.info("Uploading files...")
             try {
-                PublicUserFile(call.parameters["filename"]!!).saveFile(streamProvider = call.receiveStream())
+                val userFile = UserFile(call.parameters["filename"]!!, uploadTime = getFormattedTimeNow())
+                userFile.saveFile(streamProvider = call.receiveStream())
+                call.respondText(userFile.id, status = HttpStatusCode.OK)
             } catch (e: Throwable) {
                 logger.error("Exception when handle put request at ${call.url()}", e)
                 call.respondText(
@@ -66,7 +76,6 @@ fun Route.registerFilesRouting() {
                 )
                 return@put
             }
-            call.respondText("Success", status = HttpStatusCode.OK)
         }
 
         get("/{filename?}") {
