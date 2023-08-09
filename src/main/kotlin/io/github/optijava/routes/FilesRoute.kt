@@ -1,6 +1,9 @@
 package io.github.optijava.routes
 
-import io.github.optijava.core.*
+import io.github.optijava.core.UserFile
+import io.github.optijava.core.fileIndex
+import io.github.optijava.core.getFormattedTimeNow
+import io.github.optijava.core.storagePath
 import io.github.optijava.logger
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -53,7 +56,10 @@ fun Route.registerFilesRouting() {
                 call.respondText("404 Not Found", status = HttpStatusCode.NotFound)
                 return@get
             }
-            call.respondText("${Json.encodeToString(fileIndex[call.parameters["id"]!!]!!)} \n\nThis page has not been implemented yet.", status = HttpStatusCode.NotImplemented)
+            call.respondText(
+                "${Json.encodeToString(fileIndex[call.parameters["id"]!!]!!)} \n\nThis page has not been implemented yet.",
+                status = HttpStatusCode.NotImplemented
+            )
         }
     }
 

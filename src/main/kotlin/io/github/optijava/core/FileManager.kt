@@ -52,7 +52,7 @@ fun rebuildFileIndex() {
     logger.info("File index rebuild successfully!")
 }
 
-class UserFile(fileName: String, id: String = "", uploadTime: String): MetaData(fileName, id, uploadTime) {
+class UserFile(fileName: String, id: String = "", uploadTime: String) : MetaData(fileName, id, uploadTime) {
     init {
         if (id.isBlank()) {
             var fileID: String = getNewFileID(this.fileName)
