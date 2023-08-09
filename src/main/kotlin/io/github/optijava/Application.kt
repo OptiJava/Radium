@@ -1,5 +1,6 @@
 package io.github.optijava
 
+import io.github.optijava.config.Config
 import io.github.optijava.core.rebuildFileIndex
 import io.github.optijava.plugins.configureRouting
 import io.ktor.server.application.*
@@ -10,7 +11,8 @@ import org.slf4j.LoggerFactory
 
 var logger: Logger = LoggerFactory.getLogger("Radium")
 
-fun main() {
+fun main(args: Array<String>) {
+    Config().loadConfig(args)
     rebuildFileIndex()
     embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::module)
         .start(wait = true)
