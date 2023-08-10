@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh">
-
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
 <head>
+    <script src="https://cdn.staticfile.org/vue/3.3.4/vue.global.js"></script>
     <style>
         .top-bar {
             height: 50px;
@@ -13,6 +14,7 @@
             left: 0;
             background-color: #5270ff;
         }
+
         .top-bar-text {
             font-size: 30px;
             color: white;
@@ -20,16 +22,41 @@
             z-index: 2;
             margin-left: 20px;
         }
+
+        .button {
+            background-color: lightgreen;
+            border: 2px solid #008000;
+            border-radius: 10px;
+            color: black;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin-left: 35%;
+            margin-right: 35%;
+            margin-top: 20%;
+        }
     </style>
     <title>Radium 文件分享站</title>
 </head>
 
 <body>
-
-<div class="top-bar">
+<div class="top-bar" id="page">
     <div class="top-bar-text">Radium</div>
+    <div id="app">
+        <button class="button" @click="display_upload=true" v-if="display_upload==false">上传文件</button>
+    </div>
 </div>
-
+<script>
+    Vue.createApp({
+        data() {
+            return {
+                display_upload: false
+            }
+        }
+    }).mount("#app")
+</script>
 </body>
 
 </html>
