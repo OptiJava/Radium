@@ -1,8 +1,17 @@
 <!DOCTYPE html>
 <html lang="zh">
-<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+<meta content="text/html;charset=utf-8" http-equiv="Content-Type"/>
+
 <head>
+    <meta content="width=device-width,initial-scale=1.0" name="viewport"/>
+    <!-- Import Vue -->
     <script src="https://cdn.staticfile.org/vue/3.3.4/vue.global.js"></script>
+    <!-- Import Element Plus -->
+    <link href="https://unpkg.com/element-plus/dist/index.css" rel="stylesheet">
+    <script src="https://unpkg.com/element-plus"></script>
+    <!-- Import Axios -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
     <style>
         .top-bar {
             height: 50px;
@@ -12,51 +21,106 @@
             z-index: 1;
             right: 0;
             left: 0;
-            background-color: #5270ff;
+            background-color: white;
+            border: gray 1px solid;
+            box-shadow: rgba(0, 0, 0, 0.65) 0 1px 7px 0;
         }
 
         .top-bar-text {
-            font-size: 30px;
-            color: white;
+            font-size: 20px;
+            color: #253341;
             line-height: 50px;
             z-index: 2;
             margin-left: 20px;
         }
 
         .button {
-            background-color: lightgreen;
-            border: 2px solid #008000;
-            border-radius: 10px;
-            color: black;
-            padding: 10px 20px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
             margin-left: 35%;
             margin-right: 35%;
-            margin-top: 20%;
+            margin-top: 10%;
         }
     </style>
     <title>Radium 文件分享站</title>
 </head>
 
 <body>
-<div class="top-bar" id="page">
-    <div class="top-bar-text">Radium</div>
-    <div id="app">
-        <button class="button" @click="display_upload=true" v-if="display_upload==false">上传文件</button>
+<div class="top-bar" id="app">
+    <div class="top-bar-text">Radium 文件分享站</div>
+    <div>
+        <el-button
+                @click="display_upload=true"
+                class="button"
+                type="primary"
+                v-if="display_upload===false"
+        >上传文件
+        </el-button>
+
+        <el-upload
+                v-if="display_upload"
+                class="upload-demo"
+                action="/api/upload"
+                :http-request="uploadFile"
+                :drag="true"
+                :multiple="false"
+                :show-file-list="false"
+                :on-success="handleSuccess"
+                :on-error="handleError"
+                :progress="progress"
+        >
+            <i class="el-icon-upload"></i>
+            <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+        </el-upload>
+        <el-progress
+                v-if="percentage > 0 && display_upload===true"
+                :percentage="percentage"
+        ></el-progress>
     </div>
 </div>
 <script>
-    Vue.createApp({
+    const app = Vue.createApp({
         data() {
             return {
-                display_upload: false
+                display_upload: false,
+                percentage: 0
             }
-        }
-    }).mount("#app")
-</script>
-</body>
+        },
 
+        methods: {
+            uploadFile(file) {
+                let fileName = file.file.name;
+                let url = "/api/upload/" + fileName;
+                axios
+                    .put(url, file.file, {
+                        headers: {
+                            "Content-Type": "application/octet-stream",
+                        },
+                        onUploadProgress: (progressEvent) => {
+                            this.percentage = Math.round(
+                                (progressEvent.loaded * 100) / progressEvent.total
+                            );
+                        },
+                    })
+                    .then((response) => {
+                        this.handleSuccess(response, file);
+                    })
+                    .catch((error) => {
+                        this.handleError(error, file);
+                    });
+            },
+            handleSuccess(response, file) {
+                this.$message.success("上传成功");
+            },
+            handleError(error, file) {
+                this.$message.error("上传失败");
+            },
+            progress(event, file) {
+                return (file.size / event.totalSize) * 100;
+            },
+        },
+    })
+    app.use(ElementPlus)
+    app.mount("#app")
+</script>
+
+</body>
 </html>

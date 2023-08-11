@@ -15,12 +15,12 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 fun Route.registerFilesRouting() {
-    route("/files") {
+    route("/api/files") {
         /////////////////////////////
         //        file list        //
         /////////////////////////////
         get {
-            call.respondRedirect("/files/list", true)
+            call.respondRedirect("/api/files/list", true)
         }
         get("/list") {
             call.respondText(
@@ -38,7 +38,7 @@ fun Route.registerFilesRouting() {
                 call.respondText("404 Not Found.", status = HttpStatusCode.NotFound)
                 return@get
             }
-            call.respondRedirect("/files/${call.parameters["id"]}/info", permanent = true)
+            call.respondRedirect("/api/files/${call.parameters["id"]}/info", permanent = true)
         }
         get("/{id?}/{filename?}") {
             if (!fileIndex.contains(call.parameters["id"])) {
@@ -64,7 +64,7 @@ fun Route.registerFilesRouting() {
     }
 
 
-    route("/upload") {
+    route("/api/upload") {
         //////////////////////////////
         //       file upload        //
         //////////////////////////////
