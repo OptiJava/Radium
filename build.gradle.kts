@@ -42,3 +42,23 @@ dependencies {
     testImplementation("io.ktor:ktor-server-tests-jvm")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
 }
+
+val processFrontend: TaskProvider<Task> = tasks.register("processFrontend") {
+    doFirst() {
+        println("Processing frontend files...")
+
+        Runtime.getRuntime().exec("rm -rf ./src/main/resources/static")
+
+        val pro = ProcessBuilder("bash", "-c", "cd ./Radium && npm run build").redirectErrorStream(true).start()
+        while (pro.isAlive) {
+            Thread.sleep(200)
+        }
+
+        Runtime.getRuntime().exec("mv ./Radium/dist ./src/main/resources")
+        Runtime.getRuntime().exec("mv ./src/main/resources/dist ./src/main/resources/static")
+
+        println("Process successfully!")
+    }
+}
+
+tasks.named("compileKotlin").get().dependsOn(processFrontend)

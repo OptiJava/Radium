@@ -64,7 +64,7 @@ class UserFile(fileName: String, id: String = "", uploadTime: String) : MetaData
 
         fileIndex[this.id] = this
 
-        logger.info("Created user file instance $fileName, id: $id")
+        logger.info("Created user file instance ${this.fileName}, id: ${this.id}")
     }
 
     fun saveFile(streamProvider: InputStream) {
