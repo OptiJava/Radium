@@ -11,6 +11,8 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.util.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -70,17 +72,19 @@ fun Route.registerFilesRouting() {
         //////////////////////////////
         put("/{filename?}") {
             logger.info("Uploading files...")
-            try {
-                val userFile = UserFile(call.parameters["filename"]!!, uploadTime = getFormattedTimeNow())
-                userFile.saveFile(streamProvider = call.receiveStream())
-                call.respondText(userFile.id, status = HttpStatusCode.OK)
-            } catch (e: Throwable) {
-                logger.error("Exception when handle put request at ${call.url()}", e)
-                call.respondText(
-                    "Exception when handle put request at ${call.url()}",
-                    status = HttpStatusCode.InternalServerError
-                )
-                return@put
+            withContext(Dispatchers.IO) {
+                try {
+                    val userFile = UserFile(call.parameters["filename"]!!, uploadTime = getFormattedTimeNow())
+                    userFile.saveFile(streamProvider = call.receiveStream())
+                    call.respondText(userFile.id, status = HttpStatusCode.OK)
+                } catch (e: Throwable) {
+                    logger.error("Exception when handle put request at ${call.url()}", e)
+                    call.respondText(
+                        "Exception when handle put request at ${call.url()}",
+                        status = HttpStatusCode.InternalServerError
+                    )
+                    return@withContext
+                }
             }
         }
 
