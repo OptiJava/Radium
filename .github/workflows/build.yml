@@ -30,6 +30,8 @@ jobs:
       - name: make gradle wrapper executable
         if: ${{ runner.os != 'Windows' }}
         run: chmod +x ./gradlew
+      - name: setup node.js environment
+        uses: actions/setup-node@v3.7.0
 
       - name: build
         run: ./gradlew build

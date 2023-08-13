@@ -49,7 +49,7 @@ val processFrontend: TaskProvider<Task> = tasks.register("processFrontend") {
 
         Runtime.getRuntime().exec("rm -rf ./src/main/resources/static")
 
-        val pro = ProcessBuilder("bash", "-c", "cd ./Radium && npm run build").redirectErrorStream(true).start()
+        val pro = ProcessBuilder("bash", "-c", "cd ./Radium && npm install && npm run build").redirectErrorStream(true).start()
         while (pro.isAlive) {
             Thread.sleep(200)
         }
@@ -61,4 +61,4 @@ val processFrontend: TaskProvider<Task> = tasks.register("processFrontend") {
     }
 }
 
-tasks.named("compileKotlin").get().dependsOn(processFrontend)
+tasks.named("processResources").get().dependsOn(processFrontend)
