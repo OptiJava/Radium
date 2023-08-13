@@ -48,12 +48,12 @@ export default {
 
     const upload_success_msg = ref("")
 
-    const colors = ["blue", "aqua", "wheat", "black", "gray", "white", '#9773ff']
+    const base_url = "https://radium--optijava.repl.co"
 
-    const title_text_color = ref(`margin-top: 85px;color: ${colors[Math.floor(Math.random() * (7))]}; opacity: 1.0;`)
+    const title_text_color = ref(`margin-top: 85px;color: ${["blue", "aqua", "wheat", "black", "gray", "white", '#9773ff'][Math.floor(Math.random() * (7))]}; opacity: 1.0;`)
 
     function uploadFile(file) {
-      const url = `/api/upload/${file.file.name}`
+      const url = `${base_url}/api/upload/${file.file.name}`
       const config = {
         headers: {'Content-Type': 'application/octet-stream'},
       }
