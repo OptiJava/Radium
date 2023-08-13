@@ -8,6 +8,9 @@ build/
 radium.json
 upload/
 
+### Vite ###
+Radium/dist
+
 ### STS ###
 .apt_generated
 .classpath
