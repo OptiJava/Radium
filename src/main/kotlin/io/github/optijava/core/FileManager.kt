@@ -12,7 +12,7 @@ import kotlin.io.path.*
 
 var fileIndex: MutableMap<String, MetaData> = HashMap()
 
-var storagePath = Path.of(config.storagePath)
+var storagePath: Path = Path.of(config.storagePath)
 
 fun getNewFileID(fileName: String): String {
     return MessageDigest.getInstance("MD5")
@@ -38,12 +38,15 @@ fun rebuildFileIndex() {
                     metadataFileContent = pt.readText()
                 }
             }
-            if (targetFileName.isBlank()) {
-                logger.error("Detected illegal folder: ${it.pathString}")
-                return
-            }
 
-            val meta: MetaData = Json.decodeFromString<MetaData>(metadataFileContent)
+            check(targetFileName.isNotBlank()) { "Detected illegal folder: ${it.pathString}, please correct it or remove it" }
+
+            val meta: MetaData = try {
+                Json.decodeFromString<MetaData>(metadataFileContent)
+            } catch (e: Exception) {
+                logger.error("Exception when rebuilding file index, will skip this file, id: ${it.pathString}", e)
+                return@forEach
+            }
 
             UserFile(targetFileName, id = it.name, meta.uploadTime)
         }

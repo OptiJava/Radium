@@ -73,17 +73,26 @@ fun Route.registerFilesRouting() {
         put("/{filename?}") {
             logger.info("Uploading files...")
             withContext(Dispatchers.IO) {
+                var userFile: UserFile? = null
                 try {
-                    val userFile = UserFile(call.parameters["filename"]!!, uploadTime = getFormattedTimeNow())
+                    userFile = UserFile(call.parameters["filename"]!!, uploadTime = getFormattedTimeNow())
                     userFile.saveFile(streamProvider = call.receiveStream())
                     call.respondText(userFile.id, status = HttpStatusCode.OK)
                 } catch (e: Throwable) {
-                    logger.error("Exception when handle put request at ${call.url()}", e)
-                    call.respondText(
-                        "Exception when handle put request at ${call.url()}",
-                        status = HttpStatusCode.InternalServerError
-                    )
-                    return@withContext
+                    try {
+                        userFile?.removeFile()
+                    } catch (e: Throwable) {
+                        logger.error("Exception when removing invalid file", e)
+                    } finally {
+                        logger.error(
+                            "Exception when handle put request at ${call.url()}, the invalid file was removed",
+                            e
+                        )
+                        call.respondText(
+                            "Exception when handle put request at ${call.url()}, the invalid file was removed",
+                            status = HttpStatusCode.InternalServerError
+                        )
+                    }
                 }
             }
         }
