@@ -28,7 +28,7 @@ fun Route.registerFilesRouting() {
             call.respondText(
                 "${Json.encodeToString(fileIndex)}\n\nThis page has not been implemented yet.",
                 ContentType.Text.Plain,
-                status = HttpStatusCode.NotImplemented
+                status = HttpStatusCode.OK
             )
         }
 
@@ -60,7 +60,7 @@ fun Route.registerFilesRouting() {
             }
             call.respondText(
                 "${Json.encodeToString(fileIndex[call.parameters["id"]!!]!!)} \n\nThis page has not been implemented yet.",
-                status = HttpStatusCode.NotImplemented
+                status = HttpStatusCode.OK
             )
         }
         ////////////////////////////

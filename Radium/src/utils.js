@@ -1,13 +1,8 @@
-// @ts-ignore
-export function isServerAddressValid(serverAddress) {
-  try {
-    const response = fetch(serverAddress);
-    let ok = false;
-    response.then(isValid => {
-      ok = isValid.ok
-    });
-    return ok
-  } catch (error) {
-    return false;
-  }
+export function isServerAddressValid(serverAddress, elm) {
+    elm.info("正在检查服务器地址...")
+    const http = new XMLHttpRequest();
+    http.open('GET', serverAddress + '/api/files/list', false)
+    http.send()
+    console.log(serverAddress + " checking finished.")
+    return http.status <= 299 && http.status >= 200
 }

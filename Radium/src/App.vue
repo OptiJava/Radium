@@ -26,7 +26,8 @@
         <template #footer>
             <span class="dialog-footer">
               <el-button @click="display_backend_setting_dialog = false;backend_setting=''">Cancel</el-button>
-              <el-button type="primary" @click="handle_backend_setting_dialog_close(() => {display_backend_setting_dialog = false})">Confirm</el-button>
+              <el-button type="primary"
+                         @click="handle_backend_setting_dialog_close(() => {display_backend_setting_dialog = false})">Confirm</el-button>
             </span>
         </template>
       </el-dialog>
@@ -70,7 +71,6 @@
 <script lang="ts">
 import {ElMessage} from 'element-plus'
 import {ref} from "vue";
-import axios from 'axios'
 import {isServerAddressValid} from "./utils"
 
 export default {
@@ -84,7 +84,7 @@ export default {
         ElMessage.error("存储节点服务器地址应以http(s)://开头")
       } else if (backend_setting.value.endsWith('/')) {
         ElMessage.error("存储节点服务器地址末端不能加/")
-      } else if (!isServerAddressValid(backend_setting.value)) {
+      } else if (!isServerAddressValid(backend_setting.value, ElMessage)) {
         ElMessage.error("存储节点服务器地址无效！")
       } else {
         ElMessage.success("存储节点服务器设置成功")
@@ -99,16 +99,26 @@ export default {
     function uploadFile(file) {
       const url = `${backend_setting.value}/api/upload/${file.file.name}`
       const config = {
+        method: 'PUT',
         headers: {'Content-Type': 'application/octet-stream'},
+        body: file.file
       }
-      return axios.put(url, file.file, config).then((response) => {
-        display_upload.value = false
-        upload_success_msg.value = `文件 ${file.file.name} 已成功上传，文件id：${response.data}`
-        ElMessage.success(`文件上传成功`)
-        console.log(`File uploaded to ${url}`)
-      }).catch((error) => {
-        ElMessage.error(`文件上传失败 ` + error)
-      })
+      return fetch(url, config)
+          .then(response => {
+            if (response.ok) {
+              display_upload.value = false
+              response.text().then(text => {
+                upload_success_msg.value = `文件 ${file.file.name} 已成功上传，文件id：${text}`
+                ElMessage.success(`文件上传成功`)
+                console.log(`File uploaded to ${url}`)
+              })
+            } else {
+              response.text().then(text => {
+                    ElMessage.error(`文件上传失败！返回码：` + response.statusText + '，错误信息：' + text)
+                  }
+              )
+            }
+          })
     }
 
     // Title //
