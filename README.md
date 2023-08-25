@@ -7,4 +7,4 @@
 
 **_仍在开发中，敬请期待_**
 
-[预览站（不稳定，目前功能还不全）](https://radium--optijava.repl.co)
+[预览站（不稳定，目前功能还不全）](https://radium.optijava.top)
