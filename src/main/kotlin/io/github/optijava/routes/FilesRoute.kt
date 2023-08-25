@@ -26,7 +26,7 @@ fun Route.registerFilesRouting() {
         }
         get("/list") {
             call.respondText(
-                "$fileIndex\n\nThis page has not been implemented yet.",
+                "${Json.encodeToString(fileIndex)}\n\nThis page has not been implemented yet.",
                 ContentType.Text.Plain,
                 status = HttpStatusCode.NotImplemented
             )
@@ -40,7 +40,7 @@ fun Route.registerFilesRouting() {
                 call.respondText("404 Not Found.", status = HttpStatusCode.NotFound)
                 return@get
             }
-            call.respondRedirect("/api/files/${call.parameters["id"]}/info", permanent = true)
+            call.respondRedirect("/api/files/${call.parameters["id"]}/", permanent = true)
         }
         get("/{id?}/{filename?}") {
             if (!fileIndex.contains(call.parameters["id"])) {
@@ -53,7 +53,7 @@ fun Route.registerFilesRouting() {
                     .toFile()
             )
         }
-        get("/{id?}/info") {
+        get("/{id?}/") {
             if (!fileIndex.contains(call.parameters["id"])) {
                 call.respondText("404 Not Found", status = HttpStatusCode.NotFound)
                 return@get
@@ -62,6 +62,22 @@ fun Route.registerFilesRouting() {
                 "${Json.encodeToString(fileIndex[call.parameters["id"]!!]!!)} \n\nThis page has not been implemented yet.",
                 status = HttpStatusCode.NotImplemented
             )
+        }
+        ////////////////////////////
+        //      file remove       //
+        ////////////////////////////
+        delete("/{id?}/") {
+            if (!fileIndex.contains(call.parameters["id"])) {
+                call.respondText("404 Not Found", status = HttpStatusCode.NotFound)
+                return@delete
+            }
+            try {
+                ((fileIndex[call.parameters["id"]]!!) as UserFile).removeFile()
+                call.respondText(call.parameters["id"]!!, status = HttpStatusCode.OK)
+            } catch (e: Throwable) {
+                call.respondText("Exception when deleting file $e", status = HttpStatusCode.InternalServerError)
+                logger.error("Exception when deleting file", e)
+            }
         }
     }
 
