@@ -26,7 +26,8 @@
         <template #footer>
             <span class="dialog-footer">
               <el-button @click="backend_setting='https://radium--optijava.repl.co'">使用默认后端储存节点</el-button>
-              <el-button @click="display_backend_setting_dialog = false;backend_setting='https://radium--optijava.repl.co'">取消</el-button>
+              <el-button
+                  @click="display_backend_setting_dialog = false;backend_setting='https://radium--optijava.repl.co'">取消</el-button>
               <el-button type="primary"
                          @click="handle_backend_setting_dialog_close(() => {display_backend_setting_dialog = false})">确认</el-button>
             </span>
@@ -54,17 +55,26 @@
 
       <el-upload
           v-if="display_upload"
+          :before-upload="() => { uploading=true }"
+          :on-success="() => { uploading=false }"
+          :on-error="() => { uploading=false }"
           :auto-upload="true"
           :drag="true"
           :http-request="uploadFile"
           :show-file-list="false"
+          :multiple="false"
           action='/api/upload/'
           style="margin-left: 30%;margin-right: 30%;margin-top: 25px;opacity: 0.76;"
       >
         <el-button style="opacity: 0.9" type="primary">点击上传</el-button>
         <div slot="tip" class="el-upload__tip">只能上传一个文件</div>
       </el-upload>
-
+      <br>
+      <div v-if="uploading">
+        <el-text>正在上传中...</el-text>
+        <el-progress style="margin-right: 32%;margin-left: 32%;" :stroke-width='10' :striped="true" :percentage="78"
+                     :show-text="false" :indeterminate="true" duration="2.24"/>
+      </div>
     </div>
   </div>
 </template>
@@ -96,8 +106,10 @@ export default {
     // Upload //
     const display_upload = ref(false)
     const upload_success_msg = ref("")
+    const uploading = ref(false)
 
     function uploadFile(file) {
+      ElMessage.info(`正在上传文件${file.file.name}`)
       const url = `${backend_setting.value}/api/upload/${file.file.name}`
       const config = {
         method: 'PUT',
@@ -132,7 +144,8 @@ export default {
       upload_success_msg,
       display_backend_setting_dialog,
       backend_setting,
-      handle_backend_setting_dialog_close
+      handle_backend_setting_dialog_close,
+      uploading
     }
   },
 }
