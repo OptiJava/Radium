@@ -1,29 +1,28 @@
 <template>
-  <div id="app">
-    <div class="top-bar">
-      <div class="top-bar-text">Radium 文件分享站</div>
-    </div>
+  <div class="top-bar">
+    <div class="top-bar-text">Radium 文件分享站</div>
+  </div>
 
-    <div style="z-index: 2;position: absolute;right: 4%;top: 10px; opacity: 1.0">
-      <el-dropdown>
-        <el-button type="default">设置</el-button>
-        <template #dropdown>
-          <el-dropdown-menu>
-            <el-dropdown-item @click="display_backend_setting_dialog = true">设置储存节点</el-dropdown-item>
-          </el-dropdown-menu>
-        </template>
-      </el-dropdown>
-      <el-dialog
-          v-model="display_backend_setting_dialog"
-          :before-close="handle_backend_setting_dialog_close"
-          title="设置储存节点"
-          width="30%"
-      >
+  <div style="z-index: 2;position: absolute;right: 4%;top: 10px; opacity: 1.0">
+    <el-dropdown>
+      <el-button>设置</el-button>
+      <template #dropdown>
+        <el-dropdown-menu>
+          <el-dropdown-item @click="display_backend_setting_dialog = true">设置储存节点</el-dropdown-item>
+        </el-dropdown-menu>
+      </template>
+    </el-dropdown>
+    <el-dialog
+        v-model="display_backend_setting_dialog"
+        :before-close="handle_backend_setting_dialog_close"
+        title="设置储存节点"
+        width="30%"
+    >
         <span>
           <el-input v-model="backend_setting"
                     placeholder="请输入后端储存节点服务器地址，应以http(s)://开头，末端不加/"></el-input>
         </span>
-        <template #footer>
+      <template #footer>
             <span class="dialog-footer">
               <el-button @click="backend_setting='https://radium--optijava.repl.co'">使用默认后端储存节点</el-button>
               <el-button
@@ -31,50 +30,49 @@
               <el-button type="primary"
                          @click="handle_backend_setting_dialog_close(() => {display_backend_setting_dialog = false})">确认</el-button>
             </span>
-        </template>
-      </el-dialog>
-    </div>
+      </template>
+    </el-dialog>
+  </div>
 
-    <div style="text-align: center">
-      <h1 :style="title_text_color" class="animate__animated animate__backInUp">
-        方便、快捷地与他人共享你的文件</h1>
-      <br>
+  <div style="text-align: center">
+    <h1 :style="title_text_color" class="animate__animated animate__backInUp">
+      方便、快捷地与他人共享你的文件</h1>
+    <br>
 
-      <el-button
-          v-if="display_upload===false"
-          size="large"
-          type="primary"
-          @click="display_upload=true;upload_success_msg = ''"
-      >上传文件
-      </el-button>
+    <el-button
+        v-if="!display_upload"
+        size="large"
+        type="primary"
+        @click="display_upload=true;upload_success_msg = ''"
+    >上传文件
+    </el-button>
 
-      <br>
-      <el-text v-if="upload_success_msg !== '' && display_upload === false" size="large" type="success">
-        {{ upload_success_msg }}
-      </el-text>
+    <br>
+    <el-text v-if="upload_success_msg !== '' && !display_upload" size="large" type="success">
+      {{ upload_success_msg }}
+    </el-text>
 
-      <el-upload
-          v-if="display_upload"
-          :before-upload="() => { uploading=true }"
-          :on-success="() => { uploading=false }"
-          :on-error="() => { uploading=false }"
-          :auto-upload="true"
-          :drag="true"
-          :http-request="uploadFile"
-          :show-file-list="false"
-          :multiple="false"
-          action='/api/upload/'
-          style="margin-left: 30%;margin-right: 30%;margin-top: 25px;opacity: 0.76;"
-      >
-        <el-button style="opacity: 0.9" type="primary">点击上传</el-button>
-        <div slot="tip" class="el-upload__tip">只能上传一个文件</div>
-      </el-upload>
-      <br>
-      <div v-if="uploading">
-        <el-text>正在上传中...</el-text>
-        <el-progress style="margin-right: 32%;margin-left: 32%;" :stroke-width='10' :striped="true" :percentage="78"
-                     :show-text="false" :indeterminate="true" duration="2.24"/>
-      </div>
+    <el-upload
+        v-if="display_upload"
+        :before-upload="() => { uploading=true }"
+        :on-success="() => { uploading=false }"
+        :on-error="() => { uploading=false }"
+        :auto-upload="true"
+        :drag="true"
+        :http-request="uploadFile"
+        :show-file-list="false"
+        :multiple="false"
+        action='/api/upload/'
+        style="margin-left: 30%;margin-right: 30%;margin-top: 25px;opacity: 0.76;"
+    >
+      <el-button style="opacity: 0.9" type="primary">点击上传</el-button>
+      <div slot="tip" class="el-upload__tip">只能上传一个文件</div>
+    </el-upload>
+    <br>
+    <div v-if="uploading">
+      <el-text>正在上传中...</el-text>
+      <el-progress style="margin-right: 32%;margin-left: 32%;" :stroke-width='10' :striped="true" :percentage="78"
+                   :show-text="false" :indeterminate="true" :duration="2.24"/>
     </div>
   </div>
 </template>
@@ -95,11 +93,20 @@ export default {
         ElMessage.error("存储节点服务器地址应以http(s)://开头")
       } else if (backend_setting.value.endsWith('/')) {
         ElMessage.error("存储节点服务器地址末端不能加/")
-      } else if (!isServerAddressValid(backend_setting.value, ElMessage)) {
-        ElMessage.error("存储节点服务器地址无效！")
       } else {
-        ElMessage.success("存储节点服务器设置成功")
+        ElMessage.info("正在检查地址是否有效...")
         done()
+        isServerAddressValid(backend_setting.value).then((resp) => {
+          if (resp.status <= 299 && resp.status >= 200) {
+            ElMessage.success("储存节点服务器检查完成")
+          } else {
+            ElMessage.error("储存节点服务器无效")
+            display_backend_setting_dialog.value = true
+          }
+        }).catch(() => {
+          ElMessage.error("储存节点服务器无效")
+          display_backend_setting_dialog.value = true
+        })
       }
     }
 
@@ -108,7 +115,7 @@ export default {
     const upload_success_msg = ref("")
     const uploading = ref(false)
 
-    function uploadFile(file) {
+    function uploadFile(file: any) {
       ElMessage.info(`正在上传文件${file.file.name}`)
       const url = `${backend_setting.value}/api/upload/${file.file.name}`
       const config = {
