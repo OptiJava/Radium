@@ -13,7 +13,9 @@ lateinit var config: Config
 
 @Serializable
 class Config {
-    lateinit var storagePath: String
+    var storagePath: String = Path.of("./upload").absolutePathString()
+
+    var expireTime: Long = 10080L  // unit: min, equals 7 days
 
     fun loadConfig(args: Array<String>) {
         val dca1 = Path.of("./radium.json")
@@ -34,10 +36,9 @@ class Config {
         } else {
             logger.warn("No config file was found, generating default config at ${dca1.absolutePathString()}...")
             try {
-                this.storagePath = Path.of("./upload").absolutePathString()
-                config = this
+                config = Config()
                 dca1.createFile()
-                dca1.writeText(Json.encodeToString<Config>(config))
+                dca1.writeText(Json.encodeToString(config))
             } catch (e: IOException) {
                 throw RuntimeException("Exception when generating default config file.", e)
             }

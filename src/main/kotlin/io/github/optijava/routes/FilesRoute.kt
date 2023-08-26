@@ -2,7 +2,6 @@ package io.github.optijava.routes
 
 import io.github.optijava.core.UserFile
 import io.github.optijava.core.fileIndex
-import io.github.optijava.core.getFormattedTimeNow
 import io.github.optijava.core.storagePath
 import io.github.optijava.logger
 import io.ktor.http.*
@@ -15,6 +14,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 fun Route.registerFilesRouting() {
     route("/api/files") {
@@ -91,7 +93,12 @@ fun Route.registerFilesRouting() {
             withContext(Dispatchers.IO) {
                 var userFile: UserFile? = null
                 try {
-                    userFile = UserFile(call.parameters["filename"]!!, uploadTime = getFormattedTimeNow())
+                    userFile = UserFile(
+                        call.parameters["filename"]!!,
+                        uploadTime = (LocalDateTime.now(ZoneId.of("Asia/Shanghai")).format(
+                            DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")
+                        ))
+                    )
                     userFile.saveFile(streamProvider = call.receiveStream())
                     call.respondText(userFile.id, status = HttpStatusCode.OK)
                 } catch (e: Throwable) {

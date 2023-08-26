@@ -7,18 +7,12 @@ import kotlinx.serialization.json.Json
 import java.io.IOException
 import java.io.InputStream
 import java.nio.file.Path
-import java.security.MessageDigest
+import kotlin.concurrent.thread
 import kotlin.io.path.*
 
 var fileIndex: MutableMap<String, MetaData> = HashMap()
 
 var storagePath: Path = Path.of(config.storagePath)
-
-fun getNewFileID(fileName: String): String {
-    return MessageDigest.getInstance("MD5")
-        .digest((fileName + System.currentTimeMillis() + (1..44444444).random()).toByteArray())
-        .joinToString("") { "%02x".format(it) }
-}
 
 fun rebuildFileIndex() {
     logger.info("Rebuilding file index...")
@@ -94,5 +88,16 @@ class UserFile(fileName: String, id: String = "", uploadTime: String) : MetaData
 
         fileIndex.remove(id)
         logger.info("Successfully removed user file instance $fileName, id: $id")
+    }
+}
+
+val daemonThread = thread(isDaemon = true, start = false) {
+    while (!Thread.currentThread().isInterrupted) {
+        for (meta in fileIndex.values) {
+            if (config.expireTime > 0 && isExpired(meta.uploadTime, config.expireTime)) {
+                logger.info("${meta.fileName} was expired, id: ${meta.id}")
+                (meta as UserFile).removeFile()
+            }
+        }
     }
 }
