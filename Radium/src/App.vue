@@ -15,19 +15,20 @@
       </el-dropdown>
       <el-dialog
           v-model="display_backend_setting_dialog"
+          :before-close="handle_backend_setting_dialog_close"
           title="设置储存节点"
           width="30%"
-          :before-close="handle_backend_setting_dialog_close"
       >
         <span>
-          <el-input placeholder="请输入后端储存节点服务器地址，应以http(s)://开头，末端不加/"
-                    v-model="backend_setting"></el-input>
+          <el-input v-model="backend_setting"
+                    placeholder="请输入后端储存节点服务器地址，应以http(s)://开头，末端不加/"></el-input>
         </span>
         <template #footer>
             <span class="dialog-footer">
-              <el-button @click="display_backend_setting_dialog = false;backend_setting=''">Cancel</el-button>
+              <el-button @click="backend_setting='https://radium--optijava.repl.co'">使用默认后端储存节点</el-button>
+              <el-button @click="display_backend_setting_dialog = false;backend_setting='https://radium--optijava.repl.co'">取消</el-button>
               <el-button type="primary"
-                         @click="handle_backend_setting_dialog_close(() => {display_backend_setting_dialog = false})">Confirm</el-button>
+                         @click="handle_backend_setting_dialog_close(() => {display_backend_setting_dialog = false})">确认</el-button>
             </span>
         </template>
       </el-dialog>
@@ -39,28 +40,28 @@
       <br>
 
       <el-button
-          @click="display_upload=true;upload_success_msg = ''"
-          type="primary"
-          size="large"
           v-if="display_upload===false"
+          size="large"
+          type="primary"
+          @click="display_upload=true;upload_success_msg = ''"
       >上传文件
       </el-button>
 
       <br>
-      <el-text type="success" size="large" v-if="upload_success_msg !== '' && display_upload === false">
+      <el-text v-if="upload_success_msg !== '' && display_upload === false" size="large" type="success">
         {{ upload_success_msg }}
       </el-text>
 
       <el-upload
           v-if="display_upload"
-          style="margin-left: 30%;margin-right: 30%;margin-top: 25px;opacity: 0.76;"
-          action='/api/upload/'
           :auto-upload="true"
           :drag="true"
           :http-request="uploadFile"
           :show-file-list="false"
+          action='/api/upload/'
+          style="margin-left: 30%;margin-right: 30%;margin-top: 25px;opacity: 0.76;"
       >
-        <el-button type="primary" style="opacity: 0.9">点击上传</el-button>
+        <el-button style="opacity: 0.9" type="primary">点击上传</el-button>
         <div slot="tip" class="el-upload__tip">只能上传一个文件</div>
       </el-upload>
 
@@ -77,7 +78,7 @@ export default {
   setup() {
     // Settings //
     const display_backend_setting_dialog = ref(false)
-    const backend_setting = ref('')
+    const backend_setting = ref('https://radium--optijava.repl.co')
 
     function handle_backend_setting_dialog_close(done: () => void) {
       if (!backend_setting.value.startsWith('http')) {
@@ -114,7 +115,7 @@ export default {
               })
             } else {
               response.text().then(text => {
-                    ElMessage.error(`文件上传失败！返回码：` + response.statusText + '，错误信息：' + text)
+                    ElMessage.error(`文件上传失败，可能是后端储存节点正在维护 返回码：` + response.statusText + '，错误信息：' + text)
                   }
               )
             }
