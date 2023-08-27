@@ -33,12 +33,23 @@ jobs:
       - name: setup node.js environment
         uses: actions/setup-node@v3.7.0
 
-      - name: build
+      - name: build backend
         run: ./gradlew build
+      - name: build frontend
+        run: |
+          cd Radium
+          npm install
+          npm run build
 
-      - name: capture build artifacts
+      - name: capture backend build artifacts
         if: ${{ runner.os == 'Linux' && matrix.java == '17' }}
         uses: actions/upload-artifact@v3.1.2
         with:
-          name: artifacts
+          name: backend_artifacts
           path: build/libs/
+      - name: capture frontend build artifacts
+        if: ${{ runner.os == 'Linux' && matrix.java == '17' }}
+        uses: actions/upload-artifact@v3.1.2
+        with:
+          name: frontend_artifacts
+          path: Radium/dist

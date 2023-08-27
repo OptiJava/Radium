@@ -28,7 +28,7 @@ fun Route.registerFilesRouting() {
         }
         get("/list") {
             call.respondText(
-                "${Json.encodeToString(fileIndex)}\n\nThis page has not been implemented yet.",
+                Json.encodeToString(fileIndex),
                 ContentType.Text.Plain,
                 status = HttpStatusCode.OK
             )
@@ -61,7 +61,7 @@ fun Route.registerFilesRouting() {
                 return@get
             }
             call.respondText(
-                "${Json.encodeToString(fileIndex[call.parameters["id"]!!]!!)} \n\nThis page has not been implemented yet.",
+                Json.encodeToString(fileIndex[call.parameters["id"]!!]!!),
                 status = HttpStatusCode.OK
             )
         }
