@@ -1,6 +1,6 @@
 package io.github.optijava
 
-import io.github.optijava.config.Config
+import io.github.optijava.config.loadConfig
 import io.github.optijava.core.daemonThread
 import io.github.optijava.core.rebuildFileIndex
 import io.github.optijava.plugins.configureCORS
@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory
 var logger: Logger = LoggerFactory.getLogger("Radium")
 
 fun main(args: Array<String>) {
-    Config().loadConfig(args)
+    loadConfig(args)
     rebuildFileIndex()
     daemonThread.start()
     embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::module)

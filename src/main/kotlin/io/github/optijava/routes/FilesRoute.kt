@@ -28,7 +28,7 @@ fun Route.registerFilesRouting() {
         }
         get("/list") {
             call.respondText(
-                Json.encodeToString(fileIndex),
+                Json.encodeToString(fileIndex.values.toList()),
                 ContentType.Text.Plain,
                 status = HttpStatusCode.OK
             )

@@ -1,9 +1,26 @@
 import {createApp} from 'vue'
+
+import Root from "./Root.vue";
 import App from "./App.vue"
+
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 
-const app = createApp(App)
+import {createRouter, createWebHistory} from "vue-router";
+import FilesList from "@/files/FilesList.vue";
+
+
+const router = createRouter({
+    history: createWebHistory(),
+    routes: [
+        {path: '/', component: App},
+        {path: '/list', component: FilesList}
+    ]
+})
+
+const app = createApp(Root)
 
 app.use(ElementPlus)
-app.mount("#app")
+app.use(router)
+
+app.mount("#root")

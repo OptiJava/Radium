@@ -12,36 +12,32 @@ import kotlin.io.path.*
 lateinit var config: Config
 
 @Serializable
-class Config {
-    var storagePath: String = Path.of("./upload").absolutePathString()
+class Config(var storagePath: String, var expireTime: Long)
 
-    var expireTime: Long = 10080L  // unit: min, equals 7 days
+fun loadConfig(args: Array<String>) {
+    val dca1 = Path.of("./radium.json")
 
-    fun loadConfig(args: Array<String>) {
-        val dca1 = Path.of("./radium.json")
-
-        if (args.isNotEmpty() && args[0].startsWith("config:")) {
-            val configPath = Path.of(args[0].substring(8))
-            if (configPath.exists()) {
-                val content = configPath.readText()
-                config = Json.decodeFromString<Config>(content)
-                logger.info("Config file was loaded")
-            } else {
-                throw FileNotFoundException("Config path ${configPath.absolutePathString()} is not valid!")
-            }
-        } else if (dca1.exists()) {
-            val content = dca1.readText()
+    if (args.isNotEmpty() && args[0].startsWith("config:")) {
+        val configPath = Path.of(args[0].substring(8))
+        if (configPath.exists()) {
+            val content = configPath.readText()
             config = Json.decodeFromString<Config>(content)
             logger.info("Config file was loaded")
         } else {
-            logger.warn("No config file was found, generating default config at ${dca1.absolutePathString()}...")
-            try {
-                config = Config()
-                dca1.createFile()
-                dca1.writeText(Json.encodeToString(config))
-            } catch (e: IOException) {
-                throw RuntimeException("Exception when generating default config file.", e)
-            }
+            throw FileNotFoundException("Config path ${configPath.absolutePathString()} is not valid!")
+        }
+    } else if (dca1.exists()) {
+        val content = dca1.readText()
+        config = Json.decodeFromString<Config>(content)
+        logger.info("Config file was loaded")
+    } else {
+        logger.warn("No config file was found, generating default config at ${dca1.absolutePathString()}...")
+        try {
+            config = Config(Path.of("./upload").absolutePathString(), 10080L /* unit: min, equals 7 days */)
+            dca1.createFile()
+            dca1.writeText(Json.encodeToString(config))
+        } catch (e: IOException) {
+            throw RuntimeException("Exception when generating default config file.", e)
         }
     }
 }

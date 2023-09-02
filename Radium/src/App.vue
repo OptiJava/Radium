@@ -81,12 +81,13 @@
 import {ElMessage} from 'element-plus'
 import {ref} from "vue";
 import {isServerAddressValid} from "./utils"
+import {backend_setting} from "@/config";
+import {setCookie} from "typescript-cookie";
 
 export default {
   setup() {
     // Settings //
     const display_backend_setting_dialog = ref(false)
-    const backend_setting = ref('https://radium--optijava.repl.co')
 
     function handle_backend_setting_dialog_close(done: () => void) {
       if (!backend_setting.value.startsWith('http')) {
@@ -99,6 +100,7 @@ export default {
         isServerAddressValid(backend_setting.value).then((resp) => {
           if (resp.status <= 299 && resp.status >= 200) {
             ElMessage.success("储存节点服务器检查完成")
+            setCookie('backend_setting', backend_setting.value, { expires: 99999999999999 })
           } else {
             ElMessage.error("储存节点服务器无效")
             display_backend_setting_dialog.value = true
@@ -168,7 +170,7 @@ export default {
   right: 0;
   left: 0;
   background-color: white;
-  border: gray 1px solid;
+  border: rgb(128, 128, 128) 1px solid;
   box-shadow: rgba(0, 0, 0, 0.65) 0 1px 7px 0;
   opacity: 0.78;
 }

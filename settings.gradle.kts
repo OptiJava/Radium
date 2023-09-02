@@ -1,1 +1,1 @@
-rootProject.name = "io.github.optijava.radium"
+rootProject.name = "radium"
