@@ -100,7 +100,7 @@ export default {
         isServerAddressValid(backend_setting.value).then((resp) => {
           if (resp.status <= 299 && resp.status >= 200) {
             ElMessage.success("储存节点服务器检查完成")
-            setCookie('backend_setting', backend_setting.value, { expires: 99999999999999 })
+            setCookie('backend_setting', backend_setting.value, { expires: 999999 })
           } else {
             ElMessage.error("储存节点服务器无效")
             display_backend_setting_dialog.value = true

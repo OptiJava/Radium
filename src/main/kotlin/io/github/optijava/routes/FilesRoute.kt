@@ -45,7 +45,7 @@ fun Route.registerFilesRouting() {
             call.respondRedirect("/api/files/${call.parameters["id"]}/", permanent = true)
         }
         get("/{id?}/{filename?}") {
-            if (!fileIndex.contains(call.parameters["id"])) {
+            if (!fileIndex.containsKey(call.parameters["id"])) {
                 call.respondText("404 Not Found", status = HttpStatusCode.NotFound)
                 return@get
             }
@@ -56,7 +56,7 @@ fun Route.registerFilesRouting() {
             )
         }
         get("/{id?}/") {
-            if (!fileIndex.contains(call.parameters["id"])) {
+            if (!fileIndex.containsKey(call.parameters["id"])) {
                 call.respondText("404 Not Found", status = HttpStatusCode.NotFound)
                 return@get
             }
@@ -69,7 +69,7 @@ fun Route.registerFilesRouting() {
         //      file remove       //
         ////////////////////////////
         delete("/{id?}/") {
-            if (!fileIndex.contains(call.parameters["id"])) {
+            if (!fileIndex.containsKey(call.parameters["id"])) {
                 call.respondText("404 Not Found", status = HttpStatusCode.NotFound)
                 return@delete
             }

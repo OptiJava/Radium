@@ -7,10 +7,11 @@ import kotlinx.serialization.json.Json
 import java.io.IOException
 import java.io.InputStream
 import java.nio.file.Path
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.concurrent.thread
 import kotlin.io.path.*
 
-var fileIndex: MutableMap<String, MetaData> = HashMap()
+var fileIndex = ConcurrentHashMap<String, MetaData>()
 
 var storagePath: Path = Path.of(config.storagePath)
 
@@ -91,7 +92,7 @@ class UserFile(fileName: String, id: String = "", uploadTime: String) : MetaData
     }
 }
 
-val daemonThread = thread(isDaemon = true, start = false) {
+val daemonThread = thread(isDaemon = true, start = false, name = "Radium Daemon") {
     while (!Thread.currentThread().isInterrupted) {
         for (meta in fileIndex.values) {
             if (config.expireTime > 0 && isExpired(meta.uploadTime, config.expireTime)) {
