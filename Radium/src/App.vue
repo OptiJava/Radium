@@ -24,9 +24,9 @@
         </span>
       <template #footer>
             <span class="dialog-footer">
-              <el-button @click="backend_setting='https://radium--optijava.repl.co'">使用默认后端储存节点</el-button>
+              <el-button @click="backend_setting=default_backend_setting">使用默认后端储存节点</el-button>
               <el-button
-                  @click="display_backend_setting_dialog = false;backend_setting='https://radium--optijava.repl.co'">取消</el-button>
+                  @click="display_backend_setting_dialog = false;backend_setting=default_backend_setting">取消</el-button>
               <el-button type="primary"
                          @click="handle_backend_setting_dialog_close(() => {display_backend_setting_dialog = false})">确认</el-button>
             </span>
@@ -81,7 +81,7 @@
 import {ElMessage} from 'element-plus'
 import {ref} from "vue";
 import {isServerAddressValid} from "./utils"
-import {backend_setting} from "@/config";
+import {backend_setting, default_backend_setting} from "@/config";
 import {setCookie} from "typescript-cookie";
 
 export default {
@@ -154,7 +154,8 @@ export default {
       display_backend_setting_dialog,
       backend_setting,
       handle_backend_setting_dialog_close,
-      uploading
+      uploading,
+      default_backend_setting
     }
   },
 }

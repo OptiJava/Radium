@@ -1,7 +1,9 @@
 import {getCookie, setCookie} from "typescript-cookie";
 import {ref} from "vue";
 
-export const backend_setting = ref('https://radium--optijava.repl.co')
+export const default_backend_setting = 'https://replit.radium.optijava.top'
+
+export const backend_setting = ref(default_backend_setting)
 
 export function loadConfigNow() {
     if (getCookie('backend_setting') === undefined) {

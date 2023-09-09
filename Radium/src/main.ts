@@ -2,12 +2,12 @@ import {createApp} from 'vue'
 
 import Root from "./Root.vue";
 import App from "./App.vue"
+import FilesList from "@/files/FilesList.vue";
 
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 
 import {createRouter, createWebHistory} from "vue-router";
-import FilesList from "@/files/FilesList.vue";
 
 
 const router = createRouter({

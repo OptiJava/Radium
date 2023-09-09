@@ -2,7 +2,7 @@
   <div class="file-share">
     <el-row>
       <el-col :span="24">
-        <el-text>以下文件为本储存节点中全部公开文件，私有文件不在此列表</el-text>
+        <el-text type="warning">以下文件为本储存节点中全部公开文件，私有文件不在此列表</el-text>
       </el-col>
     </el-row>
     <el-divider></el-divider>
