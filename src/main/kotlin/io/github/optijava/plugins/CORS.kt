@@ -1,4 +1,4 @@
-package io.github.optijava.plugins;
+package io.github.optijava.plugins
 
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -8,8 +8,9 @@ fun Application.configureCORS() {
     install(CORS) {
         anyHost()
 
-        allowMethod(HttpMethod.Get)
-        allowMethod(HttpMethod.Put)
+        for (m in HttpMethod.DefaultMethods) {
+            allowMethod(m)
+        }
 
         allowHeaders { true }
 

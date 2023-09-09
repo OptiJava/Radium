@@ -18,6 +18,11 @@
               <el-button @click="downloadFile(scope.row.id, scope.row.fileName)"></el-button>
             </template>
           </el-table-column>
+          <el-table-column prop="delete" label="删除" width="70px">
+            <template #default="scope">
+              <el-button @click="removeFile(scope.row.id, scope.row.fileName)"></el-button>
+            </template>
+          </el-table-column>
           <el-table-column prop="id" label="ID"></el-table-column>
         </el-table>
       </el-col>
@@ -29,17 +34,42 @@
 import {ref} from "vue";
 import {getFileList} from "@/utils";
 import {backend_setting} from "@/config";
+import {ElMessage} from "element-plus"
 
 // file list loading //
 const files = ref()
 
-getFileList().then(data => {
-  files.value = JSON.parse(data)
-})
+function loadList() {
+  ElMessage.info("正在加载文件列表...")
+  getFileList().then(data => {
+    files.value = JSON.parse(data)
+  }).catch(err => {
+    ElMessage.error(`获取文件列表失败：${err}`)
+  })
+}
+
+loadList()
 
 // file download //
 function downloadFile(id: string, name: string) {
   window.open(`${backend_setting.value}/api/files/${id}/${name}`)
+}
+
+// file remove //
+async function removeFile(id: string, name: string) {
+  ElMessage.info(`正在删除文件 ${name} ...`)
+  await fetch(`${backend_setting.value}/api/files/${id}/`, {method: 'DELETE'}).then(resp => {
+    if (resp.ok) {
+      loadList()
+      ElMessage.success(`删除文件 ${name} 成功`)
+    } else {
+      resp.text().then(text => {
+        ElMessage.error(`删除文件 ${name} 失败：${resp.status} ${text}`)
+      })
+    }
+  }).catch(err => {
+    ElMessage.error(`删除文件 ${name} 失败：${err.text}`)
+  })
 }
 
 </script>
