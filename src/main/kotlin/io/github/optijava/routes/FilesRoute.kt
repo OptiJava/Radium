@@ -1,6 +1,7 @@
 package io.github.optijava.routes
 
 import io.github.optijava.core.UserFile
+import io.github.optijava.core.exceptions.MaxSizeReachedExceptions
 import io.github.optijava.core.fileIndex
 import io.github.optijava.core.storagePath
 import io.github.optijava.logger
@@ -97,10 +98,26 @@ fun Route.registerFilesRouting() {
                         call.parameters["filename"]!!,
                         uploadTime = (LocalDateTime.now(ZoneId.of("Asia/Shanghai")).format(
                             DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")
-                        ))
+                        )),
+                        size = try {
+                            call.request.headers["Content-Length"]!!.toLong().div(1024 * 1024).toInt()
+                        } catch (e: NullPointerException) {
+                            call.respondText(
+                                "You must provide file size in Content-Length.",
+                                ContentType.Text.Plain,
+                                status = HttpStatusCode.BadRequest
+                            )
+                            return@withContext
+                        }
                     )
                     userFile.saveFile(streamProvider = call.receiveStream())
                     call.respondText(userFile.id, status = HttpStatusCode.OK)
+                } catch (mre: MaxSizeReachedExceptions) {
+                    logger.error("=========Max size reached!!!=========", mre)
+                    call.respondText(
+                        "Exception when handle put request at ${call.url()}, max size has already reached",
+                        status = HttpStatusCode.InternalServerError
+                    )
                 } catch (e: Throwable) {
                     try {
                         userFile?.removeFile()

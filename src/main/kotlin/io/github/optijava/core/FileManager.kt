@@ -1,6 +1,7 @@
 package io.github.optijava.core
 
 import io.github.optijava.config.config
+import io.github.optijava.core.exceptions.MaxSizeReachedExceptions
 import io.github.optijava.logger
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -14,6 +15,14 @@ import kotlin.io.path.*
 var fileIndex = ConcurrentHashMap<String, MetaData>()
 
 var storagePath: Path = Path.of(config.storagePath)
+
+var totalSize: Int = 0 /* unit: MB */
+    set(value) {
+        if (value < 0) {
+            throw IllegalStateException("totalSize can't lower than 0.")
+        }
+        field = value
+    }
 
 fun rebuildFileIndex() {
     logger.info("Rebuilding file index...")
@@ -43,15 +52,27 @@ fun rebuildFileIndex() {
                 return@forEach
             }
 
-            UserFile(targetFileName, id = it.name, meta.uploadTime)
+            UserFile(targetFileName, id = it.name, meta.uploadTime, size = it.fileSizeMB())
         }
     }
 
     logger.info("File index rebuild successfully!")
 }
 
-class UserFile(fileName: String, id: String = "", uploadTime: String) : MetaData(fileName, id, uploadTime) {
+fun updateTotalSizeAndAdd(a: Int) {
+    if ((totalSize + a) > config.maxSize) {
+        throw MaxSizeReachedExceptions()
+    }
+    totalSize += a
+}
+
+fun Path.fileSizeMB() = this.fileSize().div(1024 * 1024).toInt()
+
+class UserFile(fileName: String, id: String = "", uploadTime: String, size: Int /* unit: MB */) :
+    MetaData(fileName, id, uploadTime, size) {
     init {
+        updateTotalSizeAndAdd(size)
+
         if (id.isBlank()) {
             var fileID: String = getNewFileID(this.fileName)
             while (fileIndex.keys.contains(fileID)) {
@@ -85,6 +106,11 @@ class UserFile(fileName: String, id: String = "", uploadTime: String) : MetaData
 
     @OptIn(ExperimentalPathApi::class)
     fun removeFile() {
+        try {
+            updateTotalSizeAndAdd(-size)
+        } catch (_: Throwable) {
+        }
+
         storagePath.resolve(id).deleteRecursively()
 
         fileIndex.remove(id)
