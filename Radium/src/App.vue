@@ -68,6 +68,13 @@
       <el-button style="opacity: 0.9" type="primary">点击上传</el-button>
       <div slot="tip" class="el-upload__tip">只能上传一个文件</div>
     </el-upload>
+
+    <div style="text-align: center;">
+      <el-button size="large" style="opacity: 0.9;margin-top: 60px;" type="success" @click="$router.push('/list')">
+        浏览公开文件
+      </el-button>
+    </div>
+
     <br>
     <div v-if="uploading">
       <el-text>正在上传中...</el-text>
@@ -100,7 +107,7 @@ export default {
         isServerAddressValid(backend_setting.value).then((resp) => {
           if (resp.status <= 299 && resp.status >= 200) {
             ElMessage.success("储存节点服务器检查完成")
-            setCookie('backend_setting', backend_setting.value, { expires: 999999 })
+            setCookie('backend_setting', backend_setting.value, {expires: 999999})
           } else {
             ElMessage.error("储存节点服务器无效")
             display_backend_setting_dialog.value = true
@@ -130,7 +137,7 @@ export default {
             if (response.ok) {
               display_upload.value = false
               response.text().then(text => {
-                upload_success_msg.value = `文件 ${file.file.name} 已成功上传，文件id：${text}`
+                upload_success_msg.value = `文件 ${file.file.name} 已成功上传，文件下载链接：${backend_setting.value}/api/files/${text}/${file.file.name}`
                 ElMessage.success(`文件上传成功`)
                 console.log(`File uploaded to ${url}`)
               })
