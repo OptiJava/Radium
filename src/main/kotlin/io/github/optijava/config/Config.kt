@@ -12,7 +12,7 @@ import kotlin.io.path.*
 lateinit var config: Config
 
 @Serializable
-class Config(var storagePath: String, var expireTime: Long, var maxSize: Int)
+class Config(var storagePath: String, var expireTime: Long, var maxSize: Double)
 
 fun loadConfig(args: Array<String>) {
     val dca1 = Path.of("./radium.json")
@@ -33,7 +33,7 @@ fun loadConfig(args: Array<String>) {
     } else {
         logger.warn("No config file was found, generating default config at ${dca1.absolutePathString()}...")
         try {
-            config = Config(Path.of("./upload").absolutePathString(), 10080L /* unit: min, equals 7 days */, 10240 /* unit: MB, equals 10GB */)
+            config = Config(Path.of("./upload").absolutePathString(), 10080L /* unit: min, equals 7 days */, 10240.0 /* unit: MB, equals 10GB */)
             dca1.createFile()
             dca1.writeText(Json.encodeToString(config))
         } catch (e: IOException) {

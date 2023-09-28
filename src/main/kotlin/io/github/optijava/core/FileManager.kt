@@ -3,6 +3,7 @@ package io.github.optijava.core
 import io.github.optijava.config.config
 import io.github.optijava.core.exceptions.MaxSizeReachedExceptions
 import io.github.optijava.logger
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.IOException
@@ -16,7 +17,7 @@ var fileIndex = ConcurrentHashMap<String, MetaData>()
 
 var storagePath: Path = Path.of(config.storagePath)
 
-var totalSize: Int = 0 /* unit: MB */
+var totalUsedSize: Double = 0.0 /* unit: MB */
     set(value) {
         if (value < 0) {
             throw IllegalStateException("totalSize can't lower than 0.")
@@ -24,6 +25,7 @@ var totalSize: Int = 0 /* unit: MB */
         field = value
     }
 
+@OptIn(ExperimentalPathApi::class)
 fun rebuildFileIndex() {
     logger.info("Rebuilding file index...")
 
@@ -38,7 +40,7 @@ fun rebuildFileIndex() {
             it.listDirectoryEntries().forEach { pt ->
                 if (pt.name != "info.json") {
                     targetFileName = pt.name
-                } else {
+                } else if (pt.name == "info.json") {
                     metadataFileContent = pt.readText()
                 }
             }
@@ -52,23 +54,26 @@ fun rebuildFileIndex() {
                 return@forEach
             }
 
-            UserFile(targetFileName, id = it.name, meta.uploadTime, size = it.fileSizeMB())
+            try {
+                UserFile(targetFileName, id = it.name, meta.uploadTime, size = it.fileSizeMB())
+            } catch (mre: MaxSizeReachedExceptions) {
+                logger.warn("Max size reached when reloading ${targetFileName}, remove remaining files!")
+                it.deleteRecursively()
+            }
         }
     }
 
     logger.info("File index rebuild successfully!")
 }
 
-fun updateTotalSizeAndAdd(a: Int) {
-    if ((totalSize + a) > config.maxSize) {
+fun updateTotalSizeAndAdd(a: Double) {
+    if ((totalUsedSize + a) > config.maxSize) {
         throw MaxSizeReachedExceptions()
     }
-    totalSize += a
+    totalUsedSize += a
 }
 
-fun Path.fileSizeMB() = this.fileSize().div(1024 * 1024).toInt()
-
-class UserFile(fileName: String, id: String = "", uploadTime: String, size: Int /* unit: MB */) :
+class UserFile(fileName: String, id: String = "", uploadTime: String, size: Double /* unit: MB */) :
     MetaData(fileName, id, uploadTime, size) {
     init {
         updateTotalSizeAndAdd(size)
@@ -128,3 +133,6 @@ val daemonThread = thread(isDaemon = true, start = false, name = "Radium Daemon"
         }
     }
 }
+
+@Serializable
+open class MetaData(var fileName: String, var id: String = "", var uploadTime: String, var size: Double /* unit: MB */)
