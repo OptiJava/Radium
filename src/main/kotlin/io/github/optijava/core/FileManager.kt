@@ -70,6 +70,7 @@ fun updateTotalSizeAndAdd(a: Double) {
     if ((totalUsedSize + a) > config.maxSize) {
         throw MaxSizeReachedExceptions()
     }
+    logger.info("Total size updated.")
     totalUsedSize += a
 }
 
