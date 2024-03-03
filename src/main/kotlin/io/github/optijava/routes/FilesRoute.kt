@@ -1,5 +1,6 @@
 package io.github.optijava.routes
 
+import io.github.optijava.core.PrivateUserFile
 import io.github.optijava.core.UserFile
 import io.github.optijava.core.exceptions.MaxSizeReachedExceptions
 import io.github.optijava.core.fileIndex
@@ -33,7 +34,7 @@ fun Route.registerFilesRouting() {
             }
             get("/list") {
                 call.respondText(
-                    Json.encodeToString(fileIndex.values.toList()),
+                    Json.encodeToString(fileIndex.values.toList().filter { it !is PrivateUserFile }),
                     ContentType.Text.Plain,
                     status = HttpStatusCode.OK
                 )

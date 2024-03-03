@@ -9,6 +9,9 @@ import kotlinx.serialization.json.Json
 import java.io.IOException
 import java.io.InputStream
 import java.nio.file.Path
+import java.security.MessageDigest
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.concurrent.thread
 import kotlin.io.path.*
@@ -66,15 +69,7 @@ fun rebuildFileIndex() {
     logger.info("File index rebuild successfully!")
 }
 
-fun updateTotalSizeAndAdd(a: Double) {
-    if ((totalUsedSize + a) > config.maxSize) {
-        throw MaxSizeReachedExceptions()
-    }
-    logger.info("Total size updated.")
-    totalUsedSize += a
-}
-
-class UserFile(fileName: String, id: String = "", uploadTime: String, size: Double /* unit: MB */) :
+open class UserFile(fileName: String, id: String = "", uploadTime: String, size: Double /* unit: MB */) :
     MetaData(fileName, id, uploadTime, size) {
     init {
         updateTotalSizeAndAdd(size)
@@ -124,6 +119,8 @@ class UserFile(fileName: String, id: String = "", uploadTime: String, size: Doub
     }
 }
 
+class PrivateUserFile(fileName: String, id: String = "", uploadTime: String, size: Double /* unit: MB */, passwordHash: String) : UserFile(fileName, id, uploadTime, size)
+
 val daemonThread = thread(isDaemon = true, start = false, name = "Radium Daemon") {
     while (!Thread.currentThread().isInterrupted) {
         for (meta in fileIndex.values) {
@@ -137,3 +134,28 @@ val daemonThread = thread(isDaemon = true, start = false, name = "Radium Daemon"
 
 @Serializable
 open class MetaData(var fileName: String, var id: String = "", var uploadTime: String, var size: Double /* unit: MB */)
+
+fun updateTotalSizeAndAdd(a: Double) {
+    if ((totalUsedSize + a) > config.maxSize) {
+        throw MaxSizeReachedExceptions()
+    }
+    logger.info("Total size updated.")
+    totalUsedSize += a
+}
+
+fun getNewFileID(fileName: String): String {
+    return MessageDigest.getInstance("MD5")
+        .digest((fileName + System.currentTimeMillis() + (1..44444444).random()).toByteArray())
+        .joinToString("") { "%02x".format(it) }
+}
+
+fun isExpired(createTime: String, min: Long): Boolean {
+    val createDateTime = LocalDateTime.parse(createTime, DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"))
+    val now = LocalDateTime.now()
+
+    val diffInSeconds = java.time.Duration.between(createDateTime, now).seconds
+
+    return diffInSeconds >= (min * 60)
+}
+
+fun Path.fileSizeMB(): Double = this.fileSize().div(1024.0 * 1024.0)
